@@ -65,16 +65,16 @@ class GridWorld():
     def _get_next_state_and_reward(self, state, action):
         x, y = state
         new_state = tuple(np.array(state) + np.array(action))
-        if y + 1 > self.env_size[1] - 1 and action == (0,1):    # down
+        if y + 1 > self.env_size[1] - 1 and action == [0,1]:    # down
             y = self.env_size[1] - 1
             reward = self.reward_forbidden  
-        elif x + 1 > self.env_size[0] - 1 and action == (1,0):  # right
+        elif x + 1 > self.env_size[0] - 1 and action == [1,0]:  # right
             x = self.env_size[0] - 1
             reward = self.reward_forbidden  
-        elif y - 1 < 0 and action == (0,-1):   # up
+        elif y - 1 < 0 and action == [0,-1]:   # up
             y = 0
             reward = self.reward_forbidden  
-        elif x - 1 < 0 and action == (-1, 0):  # left
+        elif x - 1 < 0 and action == [-1, 0]:  # left
             x = 0
             reward = self.reward_forbidden 
         elif new_state == self.target_state:  # stay
