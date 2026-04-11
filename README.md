@@ -5,3 +5,5 @@
 type：refactor 
 detail: 集成原始代码修改配置文件方式
 
+type: bugfix 
+detail: 修改action方向不匹配的问题
