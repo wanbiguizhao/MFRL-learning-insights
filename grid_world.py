@@ -10,17 +10,17 @@ from arguments import args
 class GridWorld():
 
     def __init__(self, env_size=args.env_size, 
-                 start_state=args.start_state, 
-                 target_state=args.target_state, 
-                 forbidden_states=args.forbidden_states):
+                start_state=args.start_state, 
+                target_state=args.target_state, 
+                forbidden_states=args.forbidden_states):
 
-        self.env_size = env_size
-        self.num_states = env_size[0] * env_size[1]
-        self.start_state = start_state
-        self.target_state = target_state
-        self.forbidden_states = forbidden_states
+        self.env_size = tuple(env_size)  # 统一为tuple
+        self.num_states = self.env_size[0] * self.env_size[1]
+        self.start_state = tuple(start_state)  # list → tuple
+        self.target_state = tuple(target_state)  # list → tuple
+        self.forbidden_states = [tuple(s) for s in forbidden_states]  # list of list → list of tuple
 
-        self.agent_state = start_state
+        self.agent_state = self.start_state
         self.action_space = args.action_space          
         self.reward_target = args.reward_target
         self.reward_forbidden = args.reward_forbidden
@@ -28,7 +28,6 @@ class GridWorld():
 
         self.canvas = None
         self.animation_interval = args.animation_interval
-
 
         self.color_forbid = (0.9290,0.6940,0.125)
         self.color_target = (0.3010,0.7450,0.9330)
