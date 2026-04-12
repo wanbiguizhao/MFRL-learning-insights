@@ -148,6 +148,75 @@ def value_iteration(env, gamma=0.9, theta=1e-6):
 
     return optimal_policy, V
 
+# ===================== 截断策略迭代 =====================
+def truncated_policy_iteration(env, gamma=0.9, theta=1e-6, max_value_iter=10):
+    """
+    截断策略迭代（Truncated Policy Iteration）
+    严格对齐原始值迭代/策略迭代代码风格
+    修复代码重复问题 | V 为字典，无索引错误
+    """
+    # 工具函数：计算Q(s,a)，消除代码重复（极简内嵌，不破坏风格）
+    def compute_q(state, action):
+        ns, r = env._get_next_state_and_reward(state, action)
+        done = env._is_done(ns)
+        return r if done else r + gamma * V[ns]
+
+    # 初始化价值函数和策略
+    V = {s: 0.0 for s in get_all_states(env)}
+    policy = {s: {tuple(a): 1/len(env.action_space) for a in env.action_space} for s in get_all_states(env)}
+    
+    while True:
+        # --------------------------
+        # 截断策略评估
+        # --------------------------
+        for _ in range(max_value_iter):
+            delta = 0.0
+            for state in get_all_states(env):
+                if state == env.target_state:
+                    continue
+
+                old_v = V[state]
+                v_new = 0.0
+                for a in env.action_space:
+                    a_key = tuple(a)
+                    q = compute_q(state, a)  # 调用函数，无重复
+                    v_new += policy[state][a_key] * q
+
+                V[state] = v_new
+                delta = max(delta, abs(old_v - V[state]))
+
+            if delta < theta:
+                break
+
+        # --------------------------
+        # 策略改进
+        # --------------------------
+        policy_stable = True
+        for state in get_all_states(env):
+            if state == env.target_state:
+                continue
+
+            old_p = policy[state].copy()
+            q = {}
+            for a in env.action_space:
+                a_key = tuple(a)
+                q[a_key] = compute_q(state, a)  # 调用函数，无重复
+
+            # 贪心更新策略
+            max_q = max(q.values())
+            best_acts = [a for a, v in q.items() if v == max_q]
+            p = 1.0 / len(best_acts)
+            for a_key in policy[state]:
+                policy[state][a_key] = p if a_key in best_acts else 0.0
+
+            if policy[state] != old_p:
+                policy_stable = False
+
+        if policy_stable:
+            print(f"✅ 截断策略迭代收敛")
+            break
+
+    return policy, V
 # ===================== 转可视化矩阵 =====================
 def policy_to_matrix(env, policy):
     n_states = env.num_states
