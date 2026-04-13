@@ -4,6 +4,9 @@
 
 # 2026年4月13日 增加蒙特卡洛的方案
 
+type:feature  
+detail:使用模式的策略模型，支持最大贪心策略和Epsilon的贪心策略
+
 type: freaute  
 detail:增加蒙特卡洛算法，支持贪心策略
 
