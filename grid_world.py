@@ -21,7 +21,8 @@ class GridWorld():
         self.forbidden_states = [tuple(s) for s in forbidden_states]  # list of list → list of tuple
 
         self.agent_state = self.start_state
-        self.action_space = args.action_space          
+        self.action_space = [tuple(a) for a in args.action_space]
+        self.action_space_set = set(self.action_space)        
         self.reward_target = args.reward_target
         self.reward_forbidden = args.reward_forbidden
         self.reward_step = args.reward_step
@@ -44,7 +45,7 @@ class GridWorld():
 
 
     def step(self, action):
-        assert action in self.action_space, "Invalid action"
+        assert action in self.action_space_set, "Invalid action"
 
         next_state, reward  = self._get_next_state_and_reward(self.agent_state, action)
         done = self._is_done(next_state)
@@ -62,32 +63,30 @@ class GridWorld():
     
         
     def _get_next_state_and_reward(self, state, action):
-        x, y = state
-        new_state = tuple(np.array(state) + np.array(action))
-        if y + 1 > self.env_size[1] - 1 and action == [0,1]:    # down
-            y = self.env_size[1] - 1
-            reward = self.reward_forbidden  
-        elif x + 1 > self.env_size[0] - 1 and action == [1,0]:  # right
-            x = self.env_size[0] - 1
-            reward = self.reward_forbidden  
-        elif y - 1 < 0 and action == [0,-1]:   # up
-            y = 0
-            reward = self.reward_forbidden  
-        elif x - 1 < 0 and action == [-1, 0]:  # left
-            x = 0
-            reward = self.reward_forbidden 
-        elif new_state == self.target_state:  # stay
-            x, y = self.target_state
-            reward = self.reward_target
-        elif new_state in self.forbidden_states:  # stay
-            x, y = state
-            reward = self.reward_forbidden        
-        else:
-            x, y = new_state
-            reward = self.reward_step
-            
-        return (x, y), reward
+        # 1. 安全地计算预期下一状态 (兼容 list 或 tuple 输入)
+        next_x = state[0] + action[0]
+        next_y = state[1] + action[1]
         
+        # 2. 边界合法性检查 (只看坐标，不看动作是什么，彻底解耦)
+        if not (0 <= next_x < self.env_size[0] and 0 <= next_y < self.env_size[1]):
+            # 越界了：状态不变（留在原地），给予撞墙惩罚
+            return state, self.reward_forbidden
+            
+        # 能走到这里，说明没有越界，构建合法的新状态
+        new_state = (next_x, next_y)
+        
+        # 3. 终点检查
+        if new_state == self.target_state:
+            return new_state, self.reward_target
+            
+        # 4. 障碍物检查
+        if new_state in self.forbidden_states:
+            # 撞障碍物：状态不变（留在原地），给予惩罚
+            return state, self.reward_forbidden
+            
+        # 5. 正常移动
+        return new_state, self.reward_step
+            
 
     def _is_done(self, state):
         return state == self.target_state

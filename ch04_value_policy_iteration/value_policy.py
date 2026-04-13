@@ -46,7 +46,7 @@ def policy_evaluation(env:GridWorld, policy, gamma=0.9, theta=1e-6):
 
 # ===================== 策略改进 =====================
 # ===================== 修复：增加 policy 参数 =====================
-def policy_improvement(env, policy, V, gamma=0.9):
+def policy_improvement(env:GridWorld, policy, V, gamma=0.9):
     new_policy = {}
     policy_stable = True
 
