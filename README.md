@@ -4,6 +4,9 @@
 
 # 2026年4月18日 增加sara算法
 
+type:featue  
+detail: 尝试值函数近似算法
+
 type: feature   
 detail: 增加TD算法
 
